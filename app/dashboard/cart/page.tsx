@@ -69,7 +69,7 @@ export default function CartPage() {
       await removeItem(itemId)
       toast({
         title: "Item removed",
-        description: `${itemTitle} has been removed from your cart`,
+        description: `₹{itemTitle} has been removed from your cart`,
       })
     } catch (error: any) {
       toast({
@@ -374,7 +374,7 @@ export default function CartPage() {
                             <p className="text-sm text-gray-600">{item.productCategory}</p>
                             <p className="text-sm text-gray-500">by {item.sellerName}</p>
                           </div>
-                          <p className="text-lg font-bold text-green-600">${item.productPrice}</p>
+                          <p className="text-lg font-bold text-green-600">₹{item.productPrice}</p>
                         </div>
 
                         {/* Quantity Controls */}
@@ -459,7 +459,7 @@ export default function CartPage() {
                         <span className="truncate mr-2 font-medium">
                           {item.productTitle} × {item.quantity}
                         </span>
-                        <span className="font-semibold">${(item.productPrice * item.quantity).toFixed(2)}</span>
+                        <span>₹{(item.productPrice * item.quantity).toFixed(2)}</span>
                       </div>
                     ))}
                   </div>
@@ -468,7 +468,7 @@ export default function CartPage() {
 
                   <div className="flex justify-between font-bold text-lg">
                     <span>Total</span>
-                    <span className="text-green-600">${total.toFixed(2)}</span>
+                    <span className="text-green-600">₹{total.toFixed(2)}</span>
                   </div>
 
                   {!showPayment ? (

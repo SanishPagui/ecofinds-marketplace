@@ -216,7 +216,7 @@ export function ProductForm({ product, mode }: ProductFormProps) {
 
           {/* Price */}
           <div className="space-y-2">
-            <Label htmlFor="price">Price (in Rs.) *</Label>
+            <Label htmlFor="price">Price (₹) *</Label>
             <Input
               id="price"
               type="number"

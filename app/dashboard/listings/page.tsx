@@ -236,7 +236,7 @@ export default function MyListingsPage() {
                 <CardContent className="pt-0">
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <p className="text-2xl font-bold text-green-600">${product.price}</p>
+                      <p className="text-2xl font-bold text-green-600">₹{product.price}</p>
                       <p className="text-sm text-gray-500">{product.category}</p>
                     </div>
                   </div>

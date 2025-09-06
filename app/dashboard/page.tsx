@@ -229,13 +229,11 @@ export default function DashboardPage() {
               <div className="text-center py-8">
                 <div className="text-4xl font-bold text-green-600 mb-2">{stats.itemsSaved}</div>
                 <p className="text-gray-600">Items saved from landfill</p>
-                <div className="mt-4 p-2 bg-green-50 rounded-lg">
-                  <p className="text-sm text-gray-700">
-                    {stats.totalSpent > 0
-                      ? `Total spent: Rs${stats.totalSpent.toFixed(2)}`
-                      : "Start buying and selling to make an impact!"}
-                  </p>
-                </div>
+                <p className="text-sm text-gray-500 mt-2">
+                  {stats.totalSpent > 0
+                    ? `Total spent: ₹${stats.totalSpent.toFixed(2)}`
+                    : "Start buying and selling to make an impact!"}
+                </p>
               </div>
             </CardContent>
           </Card>
