@@ -1,12 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/contexts/CartContext"
 import { useAuth } from "@/contexts/AuthContext"
 import { useToast } from "@/hooks/use-toast"
+import { useAnimation } from "@/contexts/AnimationContext"
 import type { Product } from "@/types/product"
 import { Package, ShoppingCart } from "lucide-react"
 import Link from "next/link"
@@ -20,6 +21,12 @@ export function ProductCard({ product }: ProductCardProps) {
   const { addItem } = useCart()
   const { user } = useAuth()
   const { toast } = useToast()
+  
+  // Refs for animations
+  const cardRef = useRef<HTMLDivElement>(null)
+  const imageRef = useRef<HTMLDivElement>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
+  const buttonsRef = useRef<HTMLDivElement>(null)
 
   const handleAddToCart = async () => {
     if (!user) {
@@ -69,9 +76,28 @@ export function ProductCard({ product }: ProductCardProps) {
 
   const isOwnProduct = user?.uid === product.sellerId
 
+  // Get animation functions from context
+  const { animateElement } = useAnimation()
+  
+  // GSAP animations
+  useEffect(() => {
+    if (cardRef.current) {
+      animateElement(cardRef.current, "scaleIn", { duration: 0.5, delay: 0 })
+    }
+    if (imageRef.current) {
+      animateElement(imageRef.current, "fadeIn", { duration: 0.5, delay: 0.1 })
+    }
+    if (contentRef.current) {
+      animateElement(contentRef.current, "fadeIn", { duration: 0.5, delay: 0.2 })
+    }
+    if (buttonsRef.current) {
+      animateElement(buttonsRef.current, "fadeIn", { duration: 0.5, delay: 0.3 })
+    }
+  }, [animateElement])
+
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow">
-      <div className="aspect-square bg-gray-100 flex items-center justify-center overflow-hidden">
+    <Card ref={cardRef} className="overflow-hidden hover:shadow-lg transition-all duration-300 border-green-100 hover:border-green-300">
+      <div ref={imageRef} className="aspect-square bg-gradient-to-br from-gray-50 to-green-50 flex items-center justify-center overflow-hidden">
         {product.imageUrl ? (
           <img
             src={product.imageUrl || "/placeholder.svg"}
@@ -82,7 +108,7 @@ export function ProductCard({ product }: ProductCardProps) {
           <Package className="h-12 w-12 text-gray-400" />
         )}
       </div>
-      <CardHeader className="pb-3">
+      <CardHeader ref={contentRef} className="pb-3">
         <div className="flex items-start justify-between">
           <CardTitle className="text-lg line-clamp-1">{product.title}</CardTitle>
           <Badge variant="secondary">{product.category}</Badge>
@@ -96,7 +122,7 @@ export function ProductCard({ product }: ProductCardProps) {
             <p className="text-sm text-gray-500">by {product.sellerName}</p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div ref={buttonsRef} className="flex gap-2">
           <Link href={`/marketplace/${product.id}`} className="flex-1">
             <Button variant="outline" size="sm" className="w-full bg-transparent">
               View Details

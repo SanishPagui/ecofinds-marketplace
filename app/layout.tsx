@@ -5,6 +5,8 @@ import { GeistMono } from "geist/font/mono"
 import { Analytics } from "@vercel/analytics/next"
 import { AuthProvider } from "@/contexts/AuthContext"
 import { CartProvider } from "@/contexts/CartContext"
+import { AnimationProvider } from "@/contexts/AnimationContext"
+import { PageTransition } from "@/components/layout/PageTransition"
 import { Toaster } from "@/components/ui/toaster"
 import { Suspense } from "react"
 import "./globals.css"
@@ -26,8 +28,12 @@ export default function RootLayout({
         <Suspense fallback={null}>
           <AuthProvider>
             <CartProvider>
-              {children}
-              <Toaster />
+              <AnimationProvider>
+                <PageTransition>
+                  {children}
+                </PageTransition>
+                <Toaster />
+              </AnimationProvider>
             </CartProvider>
           </AuthProvider>
         </Suspense>

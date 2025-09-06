@@ -16,6 +16,8 @@ export interface Purchase {
   items: PurchaseItem[]
   totalAmount: number
   status: "pending" | "confirmed" | "shipped" | "delivered" | "cancelled"
+  paymentMethod?: string
+  paymentDetails?: any
   createdAt: Date
   updatedAt: Date
 }
@@ -23,4 +25,6 @@ export interface Purchase {
 export interface CreatePurchaseData {
   items: PurchaseItem[]
   totalAmount: number
+  paymentMethod?: string
+  paymentDetails?: any
 }

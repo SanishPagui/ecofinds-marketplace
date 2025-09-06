@@ -127,30 +127,39 @@ export async function getProductsByFilters(filters: {
   maxPrice?: number
   searchTerm?: string
 }): Promise<Product[]> {
-  console.log("[v0] Getting products with filters:", filters)
-  let products = await getAllProducts()
-  console.log("[v0] Initial products count:", products.length)
+  console.log("[v1] Getting products with filters:", filters)
 
-  if (filters.category) {
-    products = products.filter((product) => product.category === filters.category)
+  let products = await getAllProducts()
+  console.log("[v1] Initial products count:", products.length)
+
+  // Category filter (skip "all")
+  if (filters.category && filters.category !== "all") {
+    products = products.filter(
+      (product) => product.category?.toLowerCase() === filters.category!.toLowerCase()
+    )
   }
 
+  // Price filters
   if (filters.minPrice !== undefined) {
-    products = products.filter((product) => product.price >= filters.minPrice!)
+    products = products.filter((product) => Number(product.price) >= filters.minPrice!)
   }
 
   if (filters.maxPrice !== undefined) {
-    products = products.filter((product) => product.price <= filters.maxPrice!)
+    products = products.filter((product) => Number(product.price) <= filters.maxPrice!)
   }
 
+  // Search filter
   if (filters.searchTerm) {
     const searchLower = filters.searchTerm.toLowerCase()
     products = products.filter(
       (product) =>
-        product.title.toLowerCase().includes(searchLower) || product.description.toLowerCase().includes(searchLower),
+        product.title.toLowerCase().includes(searchLower) ||
+        product.description.toLowerCase().includes(searchLower) ||
+        product.category?.toLowerCase().includes(searchLower) ||
+        product.sellerName?.toLowerCase().includes(searchLower)
     )
   }
 
-  console.log("[v0] Filtered products count:", products.length)
+  console.log("[v1] Filtered products count:", products.length)
   return products
 }
