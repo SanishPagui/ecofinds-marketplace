@@ -41,6 +41,7 @@ export default function MyListingsPage() {
 
     try {
       const userProducts = await getUserProducts(user.uid)
+      console.log("Loaded products:", userProducts)
       setProducts(userProducts)
     } catch (error: any) {
       toast({
