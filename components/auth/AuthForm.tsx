@@ -2,8 +2,9 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useAuth } from "@/contexts/AuthContext"
+import { useAnimation } from "@/contexts/AnimationContext"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -23,6 +24,37 @@ export function AuthForm({ mode, onToggleMode }: AuthFormProps) {
   const [loading, setLoading] = useState(false)
   const { signIn, signUp } = useAuth()
   const { toast } = useToast()
+  const { animateElement } = useAnimation()
+  
+  // Refs for animation targets
+  const cardRef = useRef<HTMLDivElement>(null)
+  const logoRef = useRef<HTMLDivElement>(null)
+  const titleRef = useRef<HTMLDivElement>(null)
+  const formRef = useRef<HTMLFormElement>(null)
+  const toggleRef = useRef<HTMLDivElement>(null)
+  
+  // Animation effect
+  useEffect(() => {
+    if (cardRef.current) {
+      animateElement(cardRef.current, "scaleIn", { duration: 0.6 })
+    }
+    
+    if (logoRef.current) {
+      animateElement(logoRef.current, "fadeIn", { duration: 0.6, delay: 0.2 })
+    }
+    
+    if (titleRef.current) {
+      animateElement(titleRef.current, "slideInUp", { duration: 0.6, delay: 0.3 })
+    }
+    
+    if (formRef.current) {
+      animateElement(formRef.current, "fadeIn", { duration: 0.6, delay: 0.4 })
+    }
+    
+    if (toggleRef.current) {
+      animateElement(toggleRef.current, "slideInUp", { duration: 0.6, delay: 0.5 })
+    }
+  }, [animateElement, mode])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -54,22 +86,26 @@ export function AuthForm({ mode, onToggleMode }: AuthFormProps) {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-blue-50 p-4">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <Card ref={cardRef} className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Leaf className="h-8 w-8 text-green-600" />
+          <div ref={logoRef} className="flex items-center justify-center gap-2 mb-4">
+            <div className="bg-green-100 p-3 rounded-full">
+              <Leaf className="h-6 w-6 text-green-600" />
+            </div>
             <span className="text-2xl font-bold text-green-600">EcoFinds</span>
           </div>
-          <CardTitle className="text-2xl">{mode === "signin" ? "Welcome Back" : "Join EcoFinds"}</CardTitle>
-          <CardDescription>
-            {mode === "signin"
-              ? "Sign in to your account to continue shopping sustainably"
-              : "Create an account to start buying and selling second-hand items"}
-          </CardDescription>
+          <div ref={titleRef}>
+            <CardTitle className="text-2xl">{mode === "signin" ? "Welcome Back" : "Join EcoFinds"}</CardTitle>
+            <CardDescription className="mt-2">
+              {mode === "signin"
+                ? "Sign in to your account to continue shopping sustainably"
+                : "Create an account to start buying and selling second-hand items"}
+            </CardDescription>
+          </div>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
             {mode === "signup" && (
               <div className="space-y-2">
                 <Label htmlFor="username">Username</Label>
@@ -109,7 +145,7 @@ export function AuthForm({ mode, onToggleMode }: AuthFormProps) {
               {loading ? "Loading..." : mode === "signin" ? "Sign In" : "Sign Up"}
             </Button>
           </form>
-          <div className="mt-4 text-center">
+          <div ref={toggleRef} className="mt-4 text-center">
             <button type="button" onClick={onToggleMode} className="text-sm text-green-600 hover:underline">
               {mode === "signin" ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
             </button>

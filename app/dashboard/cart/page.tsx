@@ -1,12 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { DashboardLayout } from "@/components/layout/DashboardLayout"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
+import { PaymentOptions } from "@/components/marketplace/PaymentOptions"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,6 +21,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { useCart } from "@/contexts/CartContext"
 import { useAuth } from "@/contexts/AuthContext"
+import { useAnimation } from "@/contexts/AnimationContext"
 import { useToast } from "@/hooks/use-toast"
 import { createPurchase } from "@/lib/purchases"
 import { Package, Trash2, ShoppingCart, Minus, Plus } from "lucide-react"
@@ -30,8 +32,16 @@ export default function CartPage() {
   const { user, userProfile } = useAuth()
   const [updatingItems, setUpdatingItems] = useState<Set<string>>(new Set())
   const [checkingOut, setCheckingOut] = useState(false)
+  const [showPayment, setShowPayment] = useState(false)
   const { toast } = useToast()
   const router = useRouter()
+  
+  // Refs for animations
+  const headerRef = useRef<HTMLDivElement>(null)
+  const emptyCartRef = useRef<HTMLDivElement>(null)
+  const cartItemsRef = useRef<HTMLDivElement>(null)
+  const summaryCardRef = useRef<HTMLDivElement>(null)
+  const cartItemRefs = useRef<(HTMLDivElement | null)[]>([])
 
   const handleQuantityChange = async (itemId: string, newQuantity: number) => {
     if (newQuantity < 1) return
@@ -86,55 +96,193 @@ export default function CartPage() {
     }
   }
 
-  const handleCheckout = async () => {
+  const handleCheckout = () => {
+    if (!user || !userProfile || !cart) return
+    setShowPayment(true)
+  }
+
+  const handlePaymentComplete = async (method: string, details: any) => {
     if (!user || !userProfile || !cart) return
 
     setCheckingOut(true)
     try {
-      const purchaseItems = cart.items.map((item) => ({
-        productId: item.productId,
-        productTitle: item.productTitle,
-        productPrice: item.productPrice,
-        productCategory: item.productCategory,
-        productImageUrl: item.productImageUrl,
-        sellerId: item.sellerId,
-        sellerName: item.sellerName,
-        quantity: item.quantity,
-      }))
+      // Process payment with Stripe
+      if (method === 'credit_card' && details.paymentMethodId) {
+        // Call our Stripe API route
+        const response = await fetch('/api/stripe', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            amount: getCartTotal(),
+            paymentMethodId: details.paymentMethodId,
+            description: `EcoFinds purchase by ${userProfile.username}`,
+          }),
+        });
 
-      await createPurchase(
-        {
-          items: purchaseItems,
-          totalAmount: getCartTotal(),
-        },
-        user.uid,
-        userProfile.username,
-      )
+        const result = await response.json();
 
-      await clearCartItems()
+        if (!response.ok) {
+          throw new Error(result.error || 'Payment processing failed');
+        }
 
-      toast({
-        title: "Order placed successfully!",
-        description: "Your sustainable purchase has been confirmed",
-      })
+        // If payment was successful, continue with order creation
+        if (result.success && result.paymentIntent) {
+          const paymentDetails = {
+            ...details,
+            paymentIntentId: result.paymentIntent.id,
+            paymentStatus: result.paymentIntent.status,
+          };
 
-      router.push("/dashboard/history")
+          const purchaseItems = cart.items.map((item) => ({
+            productId: item.productId,
+            productTitle: item.productTitle,
+            productPrice: item.productPrice,
+            productCategory: item.productCategory,
+            productImageUrl: item.productImageUrl,
+            sellerId: item.sellerId,
+            sellerName: item.sellerName,
+            quantity: item.quantity,
+          }));
+
+          await createPurchase(
+            {
+              items: purchaseItems,
+              totalAmount: getCartTotal(),
+              paymentMethod: 'stripe',
+              paymentDetails: paymentDetails,
+            },
+            user.uid,
+            userProfile.username,
+          );
+
+          await clearCartItems();
+
+          toast({
+            title: "Order placed successfully!",
+            description: "Your sustainable purchase has been confirmed",
+          });
+
+          router.push("/dashboard/history");
+        }
+      } else {
+        throw new Error('Invalid payment method');
+      }
     } catch (error: any) {
       toast({
-        title: "Error",
-        description: "Failed to process checkout",
+        title: "Payment Error",
+        description: error.message || "Failed to process checkout",
         variant: "destructive",
-      })
+      });
     } finally {
-      setCheckingOut(false)
+      setCheckingOut(false);
+      setShowPayment(false);
     }
   }
+
+  // GSAP animations with responsive features
+  const { animateElement, createScrollAnimation, isMobile, getResponsiveValue } = useAnimation()
+  
+  useEffect(() => {
+    // Animate header with responsive values
+    if (headerRef.current) {
+      animateElement(headerRef.current, 'fadeIn', { 
+        duration: getResponsiveValue(0.5, 0.3), 
+        delay: 0 
+      })
+    }
+    
+    // Animate empty cart message with responsive values
+    if (emptyCartRef.current && (!cart?.items || cart.items.length === 0)) {
+      animateElement(emptyCartRef.current, 'slideInUp', { 
+        duration: getResponsiveValue(0.5, 0.4), 
+        delay: getResponsiveValue(0.2, 0.1),
+        y: getResponsiveValue(50, 30)
+      })
+      
+      // Add hover animation to the browse button
+      const browseButton = emptyCartRef.current.querySelector('a button')
+      if (browseButton) {
+        browseButton.addEventListener('mouseenter', () => {
+          animateElement(browseButton, 'pulse', { duration: 0.5 })
+        })
+      }
+    }
+    
+    // Animate cart items container
+    if (cartItemsRef.current && cart?.items && cart.items.length > 0) {
+      animateElement(cartItemsRef.current, 'fadeIn', { duration: 0.5, delay: 0.1 })
+    }
+    
+    // Stagger cart items
+    if (cartItemRefs.current.length > 0 && cart?.items.length > 0) {
+      const validRefs = cartItemRefs.current.filter(ref => ref !== null) as HTMLDivElement[]
+      validRefs.forEach((ref, index) => {
+        animateElement(ref, 'fadeIn', { 
+          duration: 0.5, 
+          delay: 0.3 + (index * 0.1) 
+        })
+      })
+      
+      // Add scroll animations to cart items
+      validRefs.forEach((ref) => {
+        createScrollAnimation(ref, 'fadeIn',{
+          trigger: ref,
+          start: "top bottom-=100",
+          end: "bottom top+=100",
+          scrub: false,
+          once: true,
+          duration: 0.5
+        })
+      })
+    }
+    
+    // Animate summary card
+    if (summaryCardRef.current) {
+      animateElement(summaryCardRef.current, 'slideInRight', { duration: 0.8, delay: 0.4 })
+      
+      // Add scroll animation to keep summary card visible
+      createScrollAnimation(summaryCardRef.current,'none', {
+        trigger: summaryCardRef.current,
+        start: 'top top+=100px',
+        end: 'bottom bottom-=200px',
+        scrub: false,
+        once: false,
+        onEnter: () => {
+          summaryCardRef.current && animateElement(summaryCardRef.current, 'highlight', { duration: 0.5 })
+        }
+      })
+    }
+    
+    // Cleanup function
+    return () => {
+      const browseButton = emptyCartRef.current?.querySelector('a button')
+      if (browseButton) {
+        browseButton.removeEventListener('mouseenter', () => {})
+      }
+    }
+  }, [cart?.items.length, animateElement, createScrollAnimation])
 
   if (loading) {
     return (
       <DashboardLayout>
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+        <div className="max-w-4xl mx-auto space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Shopping Cart</h1>
+              <p className="text-gray-600 mt-2">Loading your cart...</p>
+            </div>
+          </div>
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-t-2 border-green-600 mb-4"></div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Loading your cart</h3>
+              <p className="text-gray-600 text-center">
+                Please wait while we retrieve your items...
+              </p>
+            </CardContent>
+          </Card>
         </div>
       </DashboardLayout>
     )
@@ -147,7 +295,7 @@ export default function CartPage() {
     <DashboardLayout>
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between" ref={headerRef}>
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Shopping Cart</h1>
             <p className="text-gray-600 mt-2">
@@ -182,24 +330,35 @@ export default function CartPage() {
         </div>
 
         {cartItems.length === 0 ? (
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <ShoppingCart className="h-12 w-12 text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Your cart is empty</h3>
-              <p className="text-gray-600 text-center mb-6">
-                Start shopping to add items to your cart and contribute to sustainable consumption.
+          <Card className="border-dashed border-2 border-gray-200">
+            <CardContent className="flex flex-col items-center justify-center py-16" ref={emptyCartRef}>
+              <div className="relative mb-6">
+                <ShoppingCart className="h-16 w-16 text-green-600" />
+                <span className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-gray-100 text-xs font-medium">0</span>
+              </div>
+              <h3 className="text-xl font-medium text-gray-900 mb-3">Your cart is empty</h3>
+              <p className="text-gray-600 text-center max-w-md mb-8">
+                Start shopping to add sustainable products to your cart and contribute to eco-friendly consumption.
               </p>
               <Link href="/marketplace">
-                <Button className="bg-green-600 hover:bg-green-700">Browse Marketplace</Button>
+                <Button className="bg-green-600 hover:bg-green-700 px-8 py-6 h-auto text-lg">
+                  <ShoppingCart className="mr-2 h-5 w-5" />
+                  Browse Marketplace
+                </Button>
               </Link>
             </CardContent>
           </Card>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Cart Items */}
-            <div className="lg:col-span-2 space-y-4">
-              {cartItems.map((item) => (
-                <Card key={item.id}>
+            <div className="lg:col-span-2 space-y-4" ref={cartItemsRef}>
+              {cartItems.map((item, index) => (
+                <Card 
+                  key={item.id}
+                  ref={(el: HTMLDivElement | null): void => {
+                    cartItemRefs.current[index] = el;
+                  }}
+                >
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
                       {/* Product Image */}
@@ -286,39 +445,62 @@ export default function CartPage() {
 
             {/* Order Summary */}
             <div className="lg:col-span-1">
-              <Card className="sticky top-24">
-                <CardHeader>
-                  <CardTitle>Order Summary</CardTitle>
+              <Card className="sticky top-24 border-green-100" ref={summaryCardRef}>
+                <CardHeader className="bg-green-50 border-b border-green-100">
+                  <CardTitle className="flex items-center">
+                    <ShoppingCart className="mr-2 h-5 w-5 text-green-600" />
+                    Order Summary
+                  </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
+                <CardContent className="space-y-4 pt-6">
+                  <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
                     {cartItems.map((item) => (
-                      <div key={item.id} className="flex justify-between text-sm">
-                        <span className="truncate mr-2">
+                      <div key={item.id} className="flex justify-between text-sm pb-2 border-b border-gray-100 last:border-0">
+                        <span className="truncate mr-2 font-medium">
                           {item.productTitle} × {item.quantity}
                         </span>
-                        <span>${(item.productPrice * item.quantity).toFixed(2)}</span>
+                        <span className="font-semibold">${(item.productPrice * item.quantity).toFixed(2)}</span>
                       </div>
                     ))}
                   </div>
 
-                  <Separator />
+                  <Separator className="bg-green-100" />
 
                   <div className="flex justify-between font-bold text-lg">
                     <span>Total</span>
                     <span className="text-green-600">${total.toFixed(2)}</span>
                   </div>
 
-                  <Button
-                    onClick={handleCheckout}
-                    disabled={checkingOut}
-                    className="w-full bg-green-600 hover:bg-green-700"
-                    size="lg"
-                  >
-                    {checkingOut ? "Processing..." : "Complete Purchase"}
-                  </Button>
-
-                  <p className="text-xs text-gray-500 text-center">Secure checkout • Sustainable shopping</p>
+                  {!showPayment ? (
+                    <div className="space-y-4">
+                      <Button
+                        onClick={handleCheckout}
+                        disabled={checkingOut}
+                        className="w-full bg-green-600 hover:bg-green-700 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
+                        size="lg"
+                      >
+                        {checkingOut ? (
+                          <>
+                            <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-b-transparent border-white"></div>
+                            Processing...
+                          </>
+                        ) : (
+                          <>Proceed to Payment</>
+                        )}
+                      </Button>
+                      <p className="text-xs text-gray-500 text-center flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        Secure checkout • Sustainable shopping
+                      </p>
+                    </div>
+                  ) : (
+                    <PaymentOptions 
+                      onPaymentMethodSelected={handlePaymentComplete}
+                      total={total}
+                    />
+                  )}
                 </CardContent>
               </Card>
             </div>

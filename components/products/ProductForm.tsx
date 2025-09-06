@@ -216,15 +216,13 @@ export function ProductForm({ product, mode }: ProductFormProps) {
 
           {/* Price */}
           <div className="space-y-2">
-            <Label htmlFor="price">Price ($) *</Label>
+            <Label htmlFor="price">Price (in Rs.) *</Label>
             <Input
               id="price"
               type="number"
-              min="0.01"
-              step="0.01"
+              min="5"
               value={formData.price}
-              onChange={(e) => handleInputChange("price", Number.parseFloat(e.target.value) || 0)}
-              placeholder="0.00"
+              onChange={(e) => handleInputChange("price", Number.parseFloat(e.target.value) )}
               required
             />
           </div>
