@@ -75,15 +75,21 @@ export async function getUserProducts(userId: string): Promise<Product[]> {
 }
 
 export async function getAllProducts(): Promise<Product[]> {
+  console.log("[v0] Fetching all products from Firestore")
   const q = query(collection(db, PRODUCTS_COLLECTION), where("status", "==", "active"), orderBy("createdAt", "desc"))
 
   const querySnapshot = await getDocs(q)
-  return querySnapshot.docs.map((doc) => ({
+  console.log("[v0] Firestore query result:", querySnapshot.size, "documents")
+
+  const products = querySnapshot.docs.map((doc) => ({
     id: doc.id,
     ...doc.data(),
     createdAt: doc.data().createdAt.toDate(),
     updatedAt: doc.data().updatedAt.toDate(),
   })) as Product[]
+
+  console.log("[v0] Processed products:", products)
+  return products
 }
 
 export async function getProductsByCategory(category: string): Promise<Product[]> {
@@ -104,8 +110,6 @@ export async function getProductsByCategory(category: string): Promise<Product[]
 }
 
 export async function searchProducts(searchTerm: string): Promise<Product[]> {
-  // Since Firestore doesn't have full-text search, we'll get all products and filter client-side
-  // In a production app, you'd use Algolia, Elasticsearch, or similar
   const allProducts = await getAllProducts()
 
   const searchLower = searchTerm.toLowerCase()
@@ -123,7 +127,9 @@ export async function getProductsByFilters(filters: {
   maxPrice?: number
   searchTerm?: string
 }): Promise<Product[]> {
+  console.log("[v0] Getting products with filters:", filters)
   let products = await getAllProducts()
+  console.log("[v0] Initial products count:", products.length)
 
   if (filters.category) {
     products = products.filter((product) => product.category === filters.category)
@@ -145,5 +151,6 @@ export async function getProductsByFilters(filters: {
     )
   }
 
+  console.log("[v0] Filtered products count:", products.length)
   return products
 }

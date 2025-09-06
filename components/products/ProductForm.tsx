@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast"
 import { createProduct, updateProduct } from "@/lib/products"
 import { PRODUCT_CATEGORIES, type Product, type CreateProductData } from "@/types/product"
-import { ImageIcon } from "lucide-react"
+import { Upload, X, ImageIcon } from "lucide-react"
 
 interface ProductFormProps {
   product?: Product
@@ -30,9 +30,89 @@ export function ProductForm({ product, mode }: ProductFormProps) {
     imageUrl: product?.imageUrl || "",
   })
   const [loading, setLoading] = useState(false)
+  const [imagePreview, setImagePreview] = useState<string>(product?.imageUrl || "")
+  const [imageFile, setImageFile] = useState<File | null>(null)
+
   const { user, userProfile } = useAuth()
   const { toast } = useToast()
   const router = useRouter()
+
+  const compressImage = (file: File, maxWidth = 800, quality = 0.8): Promise<string> => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement("canvas")
+      const ctx = canvas.getContext("2d")!
+      const img = new Image()
+
+      img.onload = () => {
+        // Calculate new dimensions
+        const ratio = Math.min(maxWidth / img.width, maxWidth / img.height)
+        canvas.width = img.width * ratio
+        canvas.height = img.height * ratio
+
+        // Draw and compress
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+        const compressedDataUrl = canvas.toDataURL("image/jpeg", quality)
+        resolve(compressedDataUrl)
+      }
+
+      img.src = URL.createObjectURL(file)
+    })
+  }
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (!file.type.startsWith("image/")) {
+      toast({
+        title: "Invalid file type",
+        description: "Please select an image file",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Please select an image smaller than 5MB",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setImageFile(file)
+
+    try {
+      const compressedImage = await compressImage(file, 800, 0.7)
+
+      const sizeInBytes = (compressedImage.length * 3) / 4
+      if (sizeInBytes > 900000) {
+        // 900KB limit to stay under 1MB
+        toast({
+          title: "Image too large",
+          description: "Please select a smaller image or try a different format",
+          variant: "destructive",
+        })
+        return
+      }
+
+      setImagePreview(compressedImage)
+      setFormData((prev) => ({ ...prev, imageUrl: compressedImage }))
+    } catch (error) {
+      toast({
+        title: "Error processing image",
+        description: "Failed to process the image. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const removeImage = () => {
+    setImageFile(null)
+    setImagePreview("")
+    setFormData((prev) => ({ ...prev, imageUrl: "" }))
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -162,14 +242,42 @@ export function ProductForm({ product, mode }: ProductFormProps) {
             />
           </div>
 
-          {/* Image Placeholder */}
+          {/* Image Upload */}
           <div className="space-y-2">
             <Label>Product Image</Label>
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-              <ImageIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">Image upload coming soon</p>
-              <p className="text-sm text-gray-500">For now, we'll use a placeholder image</p>
-            </div>
+            {imagePreview ? (
+              <div className="relative">
+                <img
+                  src={imagePreview || "/placeholder.svg"}
+                  alt="Product preview"
+                  className="w-full h-48 object-cover rounded-lg border"
+                />
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  className="absolute top-2 right-2"
+                  onClick={removeImage}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                <ImageIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600 mb-2">Upload a product image</p>
+                <p className="text-sm text-gray-500 mb-4">JPG, PNG up to 5MB</p>
+                <label htmlFor="image-upload">
+                  <Button type="button" variant="outline" className="cursor-pointer bg-transparent" asChild>
+                    <span>
+                      <Upload className="h-4 w-4 mr-2" />
+                      Choose Image
+                    </span>
+                  </Button>
+                </label>
+                <input id="image-upload" type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+              </div>
+            )}
           </div>
 
           {/* Submit Button */}

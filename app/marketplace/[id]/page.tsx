@@ -35,6 +35,7 @@ export default function ProductDetailPage() {
   const loadProduct = async () => {
     try {
       const productData = await getProductById(productId)
+      console.log(productData)
 
       if (!productData) {
         toast({

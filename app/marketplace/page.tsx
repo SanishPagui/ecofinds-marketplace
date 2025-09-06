@@ -1,63 +1,105 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useParams, useRouter } from "next/navigation"
+import { useAuth } from "@/contexts/AuthContext"
+import { useCart } from "@/contexts/CartContext"
 import { DashboardLayout } from "@/components/layout/DashboardLayout"
-import { ProductCard } from "@/components/marketplace/ProductCard"
-import { SearchFilters } from "@/components/marketplace/SearchFilters"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/hooks/use-toast"
-import { getProductsByFilters } from "@/lib/products"
+import { getProductById } from "@/lib/products"
 import type { Product } from "@/types/product"
-import { Package } from "lucide-react"
+import { ShoppingCart, ArrowLeft, User, Calendar } from "lucide-react"
+import Link from "next/link"
 
-export default function MarketplacePage() {
-  const [products, setProducts] = useState<Product[]>([])
+export default function ProductDetailPage() {
+  const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
-  const [searchLoading, setSearchLoading] = useState(false)
+  const [addingToCart, setAddingToCart] = useState(false)
+  const { user } = useAuth()
+  const { addItem } = useCart()
   const { toast } = useToast()
+  const router = useRouter()
+  const params = useParams()
+  const productId = params.id as string
 
   useEffect(() => {
-    loadProducts()
-  }, [])
-
-  const loadProducts = async (filters?: any) => {
-    const isSearch = !!filters
-    if (isSearch) {
-      setSearchLoading(true)
-    } else {
-      setLoading(true)
+    if (productId) {
+      loadProduct()
     }
+  }, [productId])
 
+  const loadProduct = async () => {
     try {
-      const filterParams = filters
-        ? {
-            category: filters.category || undefined,
-            minPrice: filters.minPrice ? Number.parseFloat(filters.minPrice) : undefined,
-            maxPrice: filters.maxPrice ? Number.parseFloat(filters.maxPrice) : undefined,
-            searchTerm: filters.searchTerm || undefined,
-          }
-        : {}
+      const productData = await getProductById(productId)
+      console.log(productData)
 
-      const productList = await getProductsByFilters(filterParams)
-      setProducts(productList)
+      if (!productData) {
+        toast({
+          title: "Error",
+          description: "Product not found",
+          variant: "destructive",
+        })
+        router.push("/marketplace")
+        return
+      }
+
+      setProduct(productData)
     } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to load products",
+        description: "Failed to load product",
         variant: "destructive",
       })
+      router.push("/marketplace")
     } finally {
       setLoading(false)
-      setSearchLoading(false)
     }
   }
 
-  const handleAddToCart = (product: Product) => {
-    // TODO: Implement cart functionality
-    toast({
-      title: "Added to cart",
-      description: `${product.title} has been added to your cart`,
-    })
+  const handleAddToCart = async () => {
+    if (!product || !user) return
+
+    if (user.uid === product.sellerId) {
+      toast({
+        title: "Cannot add own item",
+        description: "You cannot add your own items to cart",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setAddingToCart(true)
+    try {
+      await addItem({
+        productId: product.id,
+        productTitle: product.title,
+        productPrice: product.price,
+        productCategory: product.category,
+        productImageUrl: product.imageUrl,
+        sellerId: product.sellerId,
+        sellerName: product.sellerName,
+      })
+
+      toast({
+        title: "Added to cart",
+        description: `${product.title} has been added to your cart`,
+      })
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      })
+    } finally {
+      setAddingToCart(false)
+    }
   }
+
+  const isOwnProduct = user?.uid === product?.sellerId
 
   if (loading) {
     return (
@@ -69,51 +111,99 @@ export default function MarketplacePage() {
     )
   }
 
+  if (!product) {
+    return null
+  }
+
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Marketplace</h1>
-          <p className="text-gray-600 mt-2">
-            Discover unique second-hand items and contribute to sustainable consumption.
-          </p>
-        </div>
+      <div className="max-w-4xl mx-auto space-y-6">
+        {/* Back Button */}
+        <Button variant="ghost" onClick={() => router.back()} className="mb-4">
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Marketplace
+        </Button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Filters Sidebar */}
-          <div className="lg:col-span-1">
-            <SearchFilters onFiltersChange={loadProducts} loading={searchLoading} />
-          </div>
-
-          {/* Products Grid */}
-          <div className="lg:col-span-3">
-            {products.length === 0 ? (
-              <div className="text-center py-12">
-                <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No products found</h3>
-                <p className="text-gray-600">
-                  {searchLoading
-                    ? "Searching..."
-                    : "Try adjusting your search filters or check back later for new listings."}
-                </p>
-              </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Product Image */}
+          <div className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+            {product.imageUrl ? (
+              <img
+                src={product.imageUrl || "/placeholder.svg"}
+                alt={product.title}
+                className="w-full h-full object-cover rounded-lg"
+              />
             ) : (
-              <>
-                <div className="flex items-center justify-between mb-6">
-                  <p className="text-gray-600">
-                    {products.length} product{products.length !== 1 ? "s" : ""} found
-                  </p>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {products.map((product) => (
-                    <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
-                  ))}
-                </div>
-              </>
+              <div className="h-24 w-24 text-gray-400">No Image</div>
             )}
           </div>
+
+          {/* Product Details */}
+          <div className="space-y-6">
+            <div>
+              <div className="flex items-start justify-between mb-2">
+                <h1 className="text-3xl font-bold text-gray-900">{product.title}</h1>
+                <Badge variant="secondary">{product.category}</Badge>
+              </div>
+              <p className="text-3xl font-bold text-green-600">${product.price}</p>
+            </div>
+
+            <Separator />
+
+            {/* Seller Info */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <User className="h-5 w-5" />
+                  Seller Information
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <p className="font-medium">{product.sellerName}</p>
+                  <p className="text-sm text-gray-600 flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    Listed on {product.createdAt.toLocaleDateString()}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Action Buttons */}
+            <div className="space-y-3">
+              {!isOwnProduct ? (
+                <Button
+                  onClick={handleAddToCart}
+                  disabled={addingToCart}
+                  className="w-full bg-green-600 hover:bg-green-700"
+                  size="lg"
+                >
+                  <ShoppingCart className="h-5 w-5 mr-2" />
+                  {addingToCart ? "Adding to Cart..." : "Add to Cart"}
+                </Button>
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-600 text-center">This is your listing</p>
+                  <Link href={`/dashboard/listings/${product.id}/edit`}>
+                    <Button variant="outline" className="w-full bg-transparent" size="lg">
+                      Edit Listing
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
+
+        {/* Product Description */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Description</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-700 whitespace-pre-wrap">{product.description}</p>
+          </CardContent>
+        </Card>
       </div>
     </DashboardLayout>
   )

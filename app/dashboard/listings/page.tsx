@@ -132,8 +132,16 @@ export default function MyListingsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {products.map((product) => (
               <Card key={product.id} className="overflow-hidden">
-                <div className="aspect-square bg-gray-100 flex items-center justify-center">
-                  <Package className="h-12 w-12 text-gray-400" />
+                <div className="aspect-square bg-gray-100 flex items-center justify-center overflow-hidden">
+                  {product.imageUrl ? (
+                    <img
+                      src={product.imageUrl || "/placeholder.svg"}
+                      alt={product.title}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <Package className="h-12 w-12 text-gray-400" />
+                  )}
                 </div>
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
