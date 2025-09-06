@@ -293,9 +293,9 @@ export default function CartPage() {
 
   return (
     <DashboardLayout>
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="relative mx-16 mt-4 ">
         {/* Header */}
-        <div className="flex items-center justify-between" ref={headerRef}>
+        <div className="flex items-center justify-between my-4" ref={headerRef}>
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Shopping Cart</h1>
             <p className="text-gray-600 mt-2">
