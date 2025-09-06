@@ -149,7 +149,7 @@ export default function DashboardPage() {
                 <p className="text-gray-600">Items saved from landfill</p>
                 <p className="text-sm text-gray-500 mt-2">
                   {stats.totalSpent > 0
-                    ? `Total spent: $${stats.totalSpent.toFixed(2)}`
+                    ? `Total spent: ₹${stats.totalSpent.toFixed(2)}`
                     : "Start buying and selling to make an impact!"}
                 </p>
               </div>

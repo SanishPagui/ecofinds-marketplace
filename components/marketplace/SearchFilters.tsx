@@ -99,7 +99,7 @@ export function SearchFilters({ onFiltersChange, loading }: SearchFiltersProps) 
             <Input
               id="minPrice"
               type="number"
-              placeholder="$0"
+              placeholder="₹0"
               value={minPrice}
               onChange={(e) => setMinPrice(e.target.value)}
               min="0"
@@ -111,7 +111,7 @@ export function SearchFilters({ onFiltersChange, loading }: SearchFiltersProps) 
             <Input
               id="maxPrice"
               type="number"
-              placeholder="$1000"
+              placeholder="₹1000"
               value={maxPrice}
               onChange={(e) => setMaxPrice(e.target.value)}
               min="0"

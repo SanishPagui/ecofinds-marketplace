@@ -103,7 +103,7 @@ export default function PurchaseHistoryPage() {
               <TrendingUp className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${totalSpent.toFixed(2)}</div>
+              <div className="text-2xl font-bold">₹{totalSpent.toFixed(2)}</div>
               <p className="text-xs text-gray-600 mt-1">On sustainable items</p>
             </CardContent>
           </Card>
@@ -151,7 +151,7 @@ export default function PurchaseHistoryPage() {
                       <Badge className={getStatusColor(purchase.status)}>
                         {purchase.status.charAt(0).toUpperCase() + purchase.status.slice(1)}
                       </Badge>
-                      <p className="text-lg font-bold text-green-600 mt-1">${purchase.totalAmount.toFixed(2)}</p>
+                      <p className="text-lg font-bold text-green-600 mt-1">₹{purchase.totalAmount.toFixed(2)}</p>
                     </div>
                   </div>
                 </CardHeader>
@@ -172,10 +172,10 @@ export default function PurchaseHistoryPage() {
                               </div>
                               <div className="text-right">
                                 <p className="font-medium">
-                                  ${item.productPrice} × {item.quantity}
+                                  ₹{item.productPrice} × {item.quantity}
                                 </p>
                                 <p className="text-sm text-gray-600">
-                                  ${(item.productPrice * item.quantity).toFixed(2)}
+                                  ₹{(item.productPrice * item.quantity).toFixed(2)}
                                 </p>
                               </div>
                             </div>
