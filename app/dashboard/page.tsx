@@ -4,11 +4,13 @@ import { useState, useEffect, useRef } from "react"
 import { useAuth } from "@/contexts/AuthContext"
 import { useCart } from "@/contexts/CartContext"
 import { useAnimation } from "@/contexts/AnimationContext"
-import { DashboardLayout } from "@/components/layout/DashboardLayout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { getUserProducts } from "@/lib/products"
 import { getUserPurchaseStats } from "@/lib/purchases"
-import { Package, ShoppingCart, History, TrendingUp } from "lucide-react"
+import { Package, ShoppingCart, History, TrendingUp, Plus, ArrowRight, Heart, User, Calendar } from "lucide-react"
+import Link from "next/link"
 
 export default function DashboardPage() {
   const { userProfile } = useAuth()
@@ -131,114 +133,191 @@ export default function DashboardPage() {
       value: stats.listings.toString(),
       description: "Active product listings",
       icon: Package,
-      color: "text-blue-600",
-      bgColor: "bg-blue-100",
+      link: "/dashboard/listings",
+      trend: stats.listings > 0 ? "+" : "0"
     },
     {
       title: "Cart Items",
       value: cartItemCount.toString(),
       description: "Items in your cart",
       icon: ShoppingCart,
-      color: "text-green-600",
-      bgColor: "bg-green-100",
+      link: "/dashboard/cart",
+      trend: cartItemCount > 0 ? "+" : "0"
     },
     {
-      title: "Purchases",
+      title: "Total Purchases",
       value: stats.purchases.toString(),
-      description: "Total purchases made",
+      description: "Completed orders",
       icon: History,
-      color: "text-purple-600",
-      bgColor: "bg-purple-100",
+      link: "/dashboard/history",
+      trend: stats.purchases > 0 ? "+" : "0"
     },
     {
       title: "Impact Score",
       value: stats.itemsSaved.toString(),
       description: "Items saved from waste",
       icon: TrendingUp,
-      color: "text-orange-600",
-      bgColor: "bg-orange-100",
+      link: "/dashboard/history",
+      trend: stats.itemsSaved > 0 ? "+" : "0"
     },
   ]
 
-  return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        {/* Welcome Section */}
-        <div ref={welcomeRef}>
-          <h1 className="text-3xl font-bold text-gray-900">Welcome back, {userProfile?.username || "User"}!</h1>
-          <p className="text-gray-600 mt-2">Here's what's happening with your sustainable marketplace activity.</p>
-        </div>
+  const quickActions = [
+    {
+      title: "Create New Listing",
+      description: "List an item you want to sell",
+      icon: Plus,
+      link: "/dashboard/listings/new",
+      primary: true
+    },
+    {
+      title: "Browse Marketplace",
+      description: "Discover sustainable products",
+      icon: ShoppingCart,
+      link: "/marketplace",
+      primary: false
+    },
+    {
+      title: "View Favorites",
+      description: "Items you've saved for later",
+      icon: Heart,
+      link: "/dashboard/favorites",
+      primary: false
+    },
+    {
+      title: "Manage Profile",
+      description: "Update your account settings",
+      icon: User,
+      link: "/dashboard/profile",
+      primary: false
+    }
+  ]
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" ref={statsGridRef}>
-          {dashboardStats.map((stat, index) => {
-            const Icon = stat.icon
-            return (
+  return (
+    <div className="space-y-12 p-6 lg:p-8 max-w-7xl mx-auto">
+      {/* Header Section */}
+      <div ref={welcomeRef} className="text-center space-y-6">
+        <div className="space-y-4">
+          <h1 className="heading-xl text-center">Welcome back, {userProfile?.username || "User"}!</h1>
+          <p className="body-lg text-gray-600 max-w-2xl mx-auto">
+            Manage your sustainable marketplace journey. Track your impact, list new items, and discover eco-friendly treasures.
+          </p>
+        </div>
+        
+        {/* Quick Create Button */}
+        <div className="flex justify-center">
+          <Link href="/dashboard/listings/new">
+            <Button className="bg-black hover:bg-gray-800 text-white shadow-subtle transition-all duration-200 hover:scale-105 px-8 py-6 h-auto text-lg">
+              <Plus className="h-5 w-5 mr-3" />
+              Create New Listing
+            </Button>
+          </Link>
+        </div>
+      </div>
+
+      {/* Stats Grid */}
+      <div ref={statsGridRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {dashboardStats.map((stat, index) => {
+          const Icon = stat.icon
+          return (
+            <Link key={stat.title} href={stat.link}>
               <Card 
-                key={stat.title}
                 ref={(el: HTMLDivElement | null): void => {
-                  if (el) statCardRefs.current[index] = el as HTMLDivElement
+                  if (el) (statCardRefs.current as HTMLDivElement[])[index] = el
                 }}
+                className="card-minimal transition-all duration-300 hover:shadow-elegant hover:scale-105 cursor-pointer group"
               >
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-600">{stat.title}</CardTitle>
-                  <div className={`p-2 rounded-full ${stat.bgColor}`}>
-                    <Icon className={`h-4 w-4 ${stat.color}`} />
+                <CardHeader className="pb-4">
+                  <div className="flex items-center justify-between">
+                    <div className="bg-black/5 group-hover:bg-black/10 rounded-full p-3 transition-colors">
+                      <Icon className="h-6 w-6 text-black" />
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-black transition-colors" />
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stat.value}</div>
-                  <p className="text-xs text-gray-600 mt-1">{stat.description}</p>
+                <CardContent className="pt-0">
+                  <div className="space-y-3">
+                    <div className="text-3xl font-serif font-semibold text-black">{stat.value}</div>
+                    <div>
+                      <h3 className="font-medium text-black">{stat.title}</h3>
+                      <p className="body-sm text-gray-600 mt-1">{stat.description}</p>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
+            </Link>
+          )
+        })}
+      </div>
+
+      {/* Quick Actions Grid */}
+      <div className="space-y-8">
+        <div className="text-center">
+          <h2 className="heading-lg text-black">Quick Actions</h2>
+          <p className="body-md text-gray-600 mt-3">Everything you need to manage your sustainable marketplace experience</p>
+        </div>
+        
+        <div ref={quickActionsRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {quickActions.map((action, index) => {
+            const Icon = action.icon
+            return (
+              <Link key={action.title} href={action.link}>
+                <Card className={`card-minimal transition-all duration-300 hover:shadow-elegant hover:scale-105 cursor-pointer group h-full ${action.primary ? 'ring-2 ring-black/10' : ''}`}>
+                  <CardContent className="p-6 text-center space-y-4">
+                    <div className={`mx-auto rounded-full p-4 w-fit transition-colors ${action.primary ? 'bg-black text-white group-hover:bg-gray-800' : 'bg-black/5 group-hover:bg-black/10'}`}>
+                      <Icon className={`h-6 w-6 ${action.primary ? 'text-white' : 'text-black'}`} />
+                    </div>
+                    <div className="space-y-2">
+                      <h3 className="font-serif text-lg font-medium text-black">{action.title}</h3>
+                      <p className="body-sm text-gray-600">{action.description}</p>
+                    </div>
+                    <div className="flex items-center justify-center text-gray-400 group-hover:text-black transition-colors">
+                      <ArrowRight className="h-4 w-4" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
             )
           })}
         </div>
-
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card ref={quickActionsRef}>
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-              <CardDescription>Get started with your sustainable marketplace journey</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-green-50 hover:border-green-200 transition-colors duration-300">
-                <div>
-                  <h3 className="font-medium">List your first item</h3>
-                  <p className="text-sm text-gray-600">Start selling items you no longer need</p>
-                </div>
-                <Package className="h-5 w-5 text-green-600" />
-              </div>
-              <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-blue-50 hover:border-blue-200 transition-colors duration-300">
-                <div>
-                  <h3 className="font-medium">Browse marketplace</h3>
-                  <p className="text-sm text-gray-600">Find unique second-hand treasures</p>
-                </div>
-                <ShoppingCart className="h-5 w-5 text-blue-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card ref={environmentalImpactRef}>
-            <CardHeader>
-              <CardTitle>Environmental Impact</CardTitle>
-              <CardDescription>Your contribution to sustainable consumption</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8">
-                <div className="text-4xl font-bold text-green-600 mb-2">{stats.itemsSaved}</div>
-                <p className="text-gray-600">Items saved from landfill</p>
-                <p className="text-sm text-gray-500 mt-2">
-                  {stats.totalSpent > 0
-                    ? `Total spent: ₹${stats.totalSpent.toFixed(2)}`
-                    : "Start buying and selling to make an impact!"}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
       </div>
-    </DashboardLayout>
+
+      {/* Environmental Impact Section */}
+      <div ref={environmentalImpactRef} className="space-y-8">
+        <div className="text-center">
+          <h2 className="heading-lg text-black">Your Environmental Impact</h2>
+          <p className="body-md text-gray-600 mt-3">Track your contribution to sustainable consumption</p>
+        </div>
+        
+        <Card className="card-minimal">
+          <CardContent className="p-8">
+            <div className="text-center space-y-6">
+              <div className="space-y-4">
+                <div className="text-6xl font-serif font-semibold text-black">{stats.itemsSaved}</div>
+                <div>
+                  <h3 className="heading-md text-black">Items Saved from Landfill</h3>
+                  <p className="body-md text-gray-600 mt-2">
+                    {stats.totalSpent > 0
+                      ? `Total contribution to sustainable economy: ₹${stats.totalSpent.toFixed(2)}`
+                      : "Start your sustainable journey today by buying or selling eco-friendly items!"}
+                  </p>
+                </div>
+              </div>
+              
+              {stats.itemsSaved === 0 && (
+                <div className="pt-4">
+                  <Link href="/marketplace">
+                    <Button variant="outline" className="border-gray-200 hover:border-black hover:bg-gray-50 transition-all duration-200 hover:scale-105">
+                      Explore Sustainable Products
+                      <ArrowRight className="h-4 w-4 ml-2" />
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   )
 }

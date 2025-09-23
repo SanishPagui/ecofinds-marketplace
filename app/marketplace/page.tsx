@@ -1,13 +1,13 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { DashboardLayout } from "@/components/layout/DashboardLayout"
 import { ProductCard } from "@/components/marketplace/ProductCard"
 import { SearchFilters } from "@/components/marketplace/SearchFilters"
 import { useToast } from "@/hooks/use-toast"
 import { getProductsByFilters } from "@/lib/products"
 import type { Product } from "@/types/product"
 import { Package, ShoppingBag } from "lucide-react"
+import { LoadingSpinner, ProductCardSkeleton } from "@/components/ui/loading-spinner"
 import { useAnimation } from "@/contexts/AnimationContext"
 
 export default function MarketplacePage() {
@@ -110,10 +110,14 @@ export default function MarketplacePage() {
 
       const filterParams = filters
         ? {
-            category: filters.category || undefined,
-            minPrice: filters.minPrice ? Number.parseFloat(filters.minPrice) : undefined,
-            maxPrice: filters.maxPrice ? Number.parseFloat(filters.maxPrice) : undefined,
+            categories: filters.categories || [],
+            minPrice: filters.minPrice || 0,
+            maxPrice: filters.maxPrice || 5000,
             searchTerm: filters.searchTerm || undefined,
+            condition: filters.condition || [],
+            rating: filters.rating || 0,
+            availability: filters.availability || [],
+            sortBy: filters.sortBy || "newest",
           }
         : {}
 
@@ -133,6 +137,7 @@ export default function MarketplacePage() {
   }
 
   const handleAddToCart = (product: Product) => {
+    // This function is no longer needed as ProductCard handles cart functionality internally
     toast({
       title: "Added to cart",
       description: `${product.title} has been added to your cart`,
@@ -142,52 +147,77 @@ export default function MarketplacePage() {
 
   if (loading) {
     return (
-      <DashboardLayout>
-        <div className="flex flex-col items-center justify-center py-16 space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-green-600"></div>
-          <div className="text-green-600 font-medium animate-pulse">
-            {isMobile ? "Loading treasures..." : "Loading sustainable treasures..."}
+      <div className="min-h-screen bg-[#F8F7F4] p-6">
+        <div className="space-y-8 max-w-7xl mx-auto">
+          {/* Header Skeleton */}
+          <div className="text-center py-8">
+            <LoadingSpinner size="lg" variant="dots" text="Loading sustainable treasures..." />
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            {/* Filters Sidebar Skeleton */}
+            <div className="lg:col-span-1">
+              <div className="card-minimal p-6 space-y-4">
+                <div className="h-6 bg-gray-200 rounded animate-pulse"></div>
+                <div className="space-y-3">
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Products Grid Skeleton */}
+            <div className="lg:col-span-3">
+              <div className="card-minimal p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                  {[...Array(6)].map((_, i) => (
+                    <ProductCardSkeleton key={i} />
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </DashboardLayout>
+      </div>
     )
   }
 
   return (
-    <DashboardLayout>
-      <div className="space-y-8 p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl shadow-sm">
+    <div className="min-h-screen bg-[#F8F7F4] p-6">
+      <div className="space-y-8 max-w-7xl mx-auto">
         {/* Header */}
         <div id="marketplace-header" ref={headerRef} className="text-center py-8">
-          <div className="inline-block p-3 bg-green-100 rounded-full mb-4">
-            <ShoppingBag className="h-8 w-8 text-green-600" />
+          <div className="inline-block p-3 bg-black/5 rounded-full mb-4">
+            <ShoppingBag className="h-8 w-8 text-black" />
           </div>
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-green-700 to-emerald-600 bg-clip-text text-transparent">
+          <h1 className="heading-xl text-center">
             EcoFinds Marketplace
           </h1>
-          <p className="text-green-700 mt-4 text-xl font-medium max-w-2xl mx-auto">
+          <p className="body-lg text-center mt-4 max-w-2xl mx-auto">
             Discover unique second-hand treasures and contribute to sustainable consumption
           </p>
-          <div className="w-24 h-1 bg-gradient-to-r from-green-500 to-emerald-500 mx-auto mt-4 rounded-full"></div>
+          <div className="w-24 h-1 bg-black mx-auto mt-4"></div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Filters Sidebar */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl shadow-sm border border-green-100 p-6">
-              <SearchFilters onFiltersChange={loadProducts} loading={searchLoading} />
+            <div className="card-minimal p-6">
+              <SearchFilters onFiltersChange={loadProducts} loading={searchLoading} totalProducts={products.length} />
             </div>
           </div>
 
           {/* Products Grid */}
           <div ref={productsRef} className="lg:col-span-3">
-            <div className="bg-white rounded-xl shadow-sm border border-green-100 p-6">
+            <div className="card-minimal p-6">
               {products.length === 0 ? (
                 <div className="text-center py-16">
-                  <div className="bg-green-100 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6 animate-pulse">
-                    <Package className="h-12 w-12 text-green-600" />
+                  <div className="bg-black/5 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
+                    <Package className="h-12 w-12 text-black" />
                   </div>
-                  <h3 className="text-2xl font-semibold text-green-800 mb-3">No products found</h3>
-                  <p className="text-green-600 text-lg">
+                  <h3 className="heading-md text-center mb-3">No products found</h3>
+                  <p className="body-md text-center text-gray-600">
                     {searchLoading
                       ? "Searching for amazing finds..."
                       : "Try adjusting your search filters or check back later for new sustainable treasures."}
@@ -197,24 +227,16 @@ export default function MarketplacePage() {
                 <>
                   <div className="flex items-center justify-between mb-8">
                     <div>
-                      <h2 className="text-2xl font-semibold text-green-800">
+                      <h2 className="heading-md text-left">
                         {products.length} sustainable find{products.length !== 1 ? "s" : ""}
                       </h2>
-                      <p className="text-green-600 mt-1">Ready for their next adventure</p>
+                      <p className="body-md text-gray-600 mt-1">Ready for their next adventure</p>
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
                     {products.map((product, index) => (
-                      <div
-                        key={product.id}
-                        ref={(el: HTMLDivElement | null): void => {
-                          productCardsRef.current[index] = el;
-                        }}
-                        className={`group transition-all duration-500 ${isMobile ? 'hover:scale-102 hover:-translate-y-1' : 'hover:scale-105 hover:-translate-y-2'}`}
-                      >
-                        <div className="bg-gradient-to-br from-white to-green-50 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-green-100 group-hover:border-green-300">
-                          <ProductCard product={product} onAddToCart={handleAddToCart} />
-                        </div>
+                      <div key={product.id} className="h-full">
+                        <ProductCard product={product} index={index} />
                       </div>
                     ))}
                   </div>
@@ -224,6 +246,6 @@ export default function MarketplacePage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </div>
   )
 }

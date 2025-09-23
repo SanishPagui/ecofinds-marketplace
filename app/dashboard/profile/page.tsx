@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useAuth } from "@/contexts/AuthContext"
-import { DashboardLayout } from "@/components/layout/DashboardLayout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -127,129 +126,128 @@ export default function ProfilePage() {
   }, [animateElement, createScrollAnimation])
 
   return (
-    <DashboardLayout>
-      <div className="max-w-2xl mx-auto space-y-6">
-        <div ref={headerRef}>
-          <h1 className="text-3xl font-bold text-gray-900">Profile Settings</h1>
-          <p className="text-gray-600 mt-2">Manage your account information and preferences.</p>
-        </div>
+    <div className="space-y-8 p-6 lg:p-8 max-w-7xl mx-auto">
+      <div ref={headerRef}>
+        <h1 className="heading-xl text-left">Profile Settings</h1>
+        <p className="body-lg text-gray-600 mt-3">Manage your account information and preferences.</p>
+      </div>
 
-        <Card ref={personalInfoCardRef} className="transition-all hover:shadow-lg">
-          <CardHeader>
-            <CardTitle>Personal Information</CardTitle>
-            <CardDescription>Update your personal details and account information.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Profile Avatar */}
-            <div ref={avatarRef} className="flex items-center gap-4">
-              <Avatar className="h-20 w-20">
-                <AvatarFallback className="bg-green-100 text-green-700 text-xl">
-                  {userProfile?.username?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <h3 className="font-medium text-lg">{userProfile?.username || "User"}</h3>
-                <p className="text-gray-600">{user?.email}</p>
-              </div>
+      <Card ref={personalInfoCardRef} className="card-minimal transition-all duration-200 hover:shadow-elegant">
+        <CardHeader>
+          <CardTitle className="font-serif text-lg font-medium">Personal Information</CardTitle>
+          <CardDescription className="body-md text-gray-600">Update your personal details and account information.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-8">
+          {/* Profile Avatar */}
+          <div ref={avatarRef} className="flex items-center gap-6">
+            <Avatar className="h-24 w-24 border-2 border-gray-100">
+              <AvatarFallback className="bg-gray-100 text-black text-2xl font-serif">
+                {userProfile?.username?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <h3 className="font-serif text-xl font-medium text-black">{userProfile?.username || "User"}</h3>
+              <p className="body-md text-gray-600 mt-1">{user?.email}</p>
             </div>
+          </div>
 
-            {/* Form Fields */}
-            <div ref={formFieldsRef} className="grid grid-cols-1 gap-6">
-              {/* Username */}
-              <div className="space-y-2">
-                <Label htmlFor="username" className="flex items-center gap-2">
-                  <User className="h-4 w-4" />
-                  Username
-                </Label>
-                {isEditing ? (
-                  <Input
-                    id="username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="Enter your username"
-                  />
-                ) : (
-                  <div className="p-3 bg-gray-50 rounded-md">{userProfile?.username || "Not set"}</div>
-                )}
-              </div>
-
-              {/* Email (Read-only) */}
-              <div className="space-y-2">
-                <Label className="flex items-center gap-2">
-                  <Mail className="h-4 w-4" />
-                  Email Address
-                </Label>
-                <div className="p-3 bg-gray-50 rounded-md text-gray-600">{user?.email}</div>
-                <p className="text-sm text-gray-500">
-                  Email cannot be changed. Contact support if you need to update your email.
-                </p>
-              </div>
-
-              {/* Member Since */}
-              <div className="space-y-2">
-                <Label className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  Member Since
-                </Label>
-                <div className="p-3 bg-gray-50 rounded-md text-gray-600">
-                  {userProfile?.createdAt ? new Date(userProfile.createdAt).toLocaleDateString() : "Unknown"}
-                </div>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex gap-3 pt-4">
+          {/* Form Fields */}
+          <div ref={formFieldsRef} className="grid grid-cols-1 gap-8">
+            {/* Username */}
+            <div className="space-y-3">
+              <Label htmlFor="username" className="flex items-center gap-2 body-md font-medium">
+                <User className="h-4 w-4" />
+                Username
+              </Label>
               {isEditing ? (
-                <>
-                  <Button 
-                    onClick={handleSave} 
-                    disabled={loading} 
-                    className="bg-green-600 hover:bg-green-700 transition-transform hover:scale-105"
-                  >
-                    {loading ? "Saving..." : "Save Changes"}
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    onClick={handleCancel} 
-                    disabled={loading}
-                    className="transition-transform hover:scale-105"
-                  >
-                    Cancel
-                  </Button>
-                </>
+                <Input
+                  id="username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Enter your username"
+                  className="border-gray-200 focus:border-black transition-colors"
+                />
               ) : (
-                <Button 
-                  onClick={() => setIsEditing(true)} 
-                  variant="outline"
-                  className="transition-transform hover:scale-105"
-                >
-                  Edit Profile
-                </Button>
+                <div className="p-4 bg-gray-50 rounded-md border border-gray-100 font-medium">{userProfile?.username || "Not set"}</div>
               )}
             </div>
-          </CardContent>
-        </Card>
 
-        {/* Account Stats */}
-        <Card ref={accountStatsCardRef} className="transition-all hover:shadow-lg">
-          <CardHeader>
-            <CardTitle>Account Statistics</CardTitle>
-            <CardDescription>Your activity and impact on the EcoFinds marketplace.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-4">
-              <div ref={(el) => { statItemRefs.current[0] = el }} className="text-center p-4 bg-green-50 rounded-lg transition-all hover:bg-green-100">
-                <div className="text-2xl font-bold text-green-600">0</div>
-                <p className="text-sm text-gray-600">Items Listed</p>
-              </div>
-              <div ref={(el) => { statItemRefs.current[1] = el; }} className="text-center p-4 bg-blue-50 rounded-lg transition-all hover:bg-blue-100">
-                <div className="text-2xl font-bold text-blue-600">0</div>
-                <p className="text-sm text-gray-600">Items Purchased</p>
+            {/* Email (Read-only) */}
+            <div className="space-y-3">
+              <Label className="flex items-center gap-2 body-md font-medium">
+                <Mail className="h-4 w-4" />
+                Email Address
+              </Label>
+              <div className="p-4 bg-gray-50 rounded-md border border-gray-100 text-gray-600">{user?.email}</div>
+              <p className="body-sm text-gray-500">
+                Email cannot be changed. Contact support if you need to update your email.
+              </p>
+            </div>
+
+            {/* Member Since */}
+            <div className="space-y-3">
+              <Label className="flex items-center gap-2 body-md font-medium">
+                <Calendar className="h-4 w-4" />
+                Member Since
+              </Label>
+              <div className="p-4 bg-gray-50 rounded-md border border-gray-100 text-gray-600">
+                {userProfile?.createdAt ? new Date(userProfile.createdAt).toLocaleDateString() : "Unknown"}
               </div>
             </div>
-          </CardContent>
-        </Card>
-      </div>
-    </DashboardLayout>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-4 pt-6">
+            {isEditing ? (
+              <>
+                <Button 
+                  onClick={handleSave} 
+                  disabled={loading} 
+                  className="bg-black hover:bg-gray-800 text-white shadow-subtle transition-all duration-200 hover:scale-105"
+                >
+                  {loading ? "Saving..." : "Save Changes"}
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={handleCancel} 
+                  disabled={loading}
+                  className="border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all duration-200 hover:scale-105"
+                >
+                  Cancel
+                </Button>
+              </>
+            ) : (
+              <Button 
+                onClick={() => setIsEditing(true)} 
+                variant="outline"
+                className="border-gray-200 hover:border-black hover:bg-gray-50 transition-all duration-200 hover:scale-105"
+              >
+                Edit Profile
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Account Stats */}
+      <Card ref={accountStatsCardRef} className="card-minimal transition-all duration-200 hover:shadow-elegant">
+        <CardHeader>
+          <CardTitle className="font-serif text-lg font-medium">Account Statistics</CardTitle>
+          <CardDescription className="body-md text-gray-600">Your activity and impact on the EcoFinds marketplace.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-6">
+            <div ref={(el) => { statItemRefs.current[0] = el }} className="text-center p-6 bg-gray-50 rounded-lg border border-gray-100 transition-all duration-200 hover:bg-gray-100">
+              <div className="text-3xl font-serif font-semibold text-black">0</div>
+              <p className="body-sm text-gray-600 mt-2">Items Listed</p>
+            </div>
+            <div ref={(el) => { statItemRefs.current[1] = el; }} className="text-center p-6 bg-gray-50 rounded-lg border border-gray-100 transition-all duration-200 hover:bg-gray-100">
+              <div className="text-3xl font-serif font-semibold text-black">0</div>
+              <p className="body-sm text-gray-600 mt-2">Items Purchased</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   )
 }

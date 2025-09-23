@@ -1,21 +1,18 @@
 "use client"
 
-import { DashboardLayout } from "@/components/layout/DashboardLayout"
 import { ProductForm } from "@/components/products/ProductForm"
 
 export default function NewListingPage() {
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Create New Listing</h1>
-          <p className="text-gray-600 mt-2">
-            Add a new item to the EcoFinds marketplace and start selling sustainably.
-          </p>
-        </div>
-
-        <ProductForm mode="create" />
+    <div className="space-y-6 p-6 lg:p-8 max-w-7xl mx-auto">
+      <div>
+        <h1 className="heading-xl text-left">Create New Listing</h1>
+        <p className="body-lg text-gray-600 mt-3">
+          Add a new item to the EcoFinds marketplace and start selling sustainably.
+        </p>
       </div>
-    </DashboardLayout>
+
+      <ProductForm mode="create" />
+    </div>
   )
 }

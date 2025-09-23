@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useAuth } from "@/contexts/AuthContext"
-import { DashboardLayout } from "@/components/layout/DashboardLayout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -148,143 +147,149 @@ export default function PurchaseHistoryPage() {
 
   if (loading) {
     return (
-      <DashboardLayout>
+      <div className="p-6 lg:p-8">
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
         </div>
-      </DashboardLayout>
+      </div>
     )
   }
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div ref={headerRef}>
-          <h1 className="text-3xl font-bold text-gray-900">Purchase History</h1>
-          <p className="text-gray-600 mt-2">Track your sustainable shopping journey and environmental impact.</p>
-        </div>
+    <div className="space-y-8 p-6 lg:p-8 max-w-7xl mx-auto">
+      {/* Header */}
+      <div ref={headerRef}>
+        <h1 className="heading-xl text-left">Purchase History</h1>
+        <p className="body-lg text-gray-600 mt-3">Track your sustainable shopping journey and environmental impact.</p>
+      </div>
 
-        {/* Stats Cards */}
-        <div ref={statsGridRef} className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card ref={(el: HTMLDivElement | null) => { statCardRefs.current[0] = el }} className="transition-all hover:shadow-lg">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Total Orders</CardTitle>
-              <ShoppingBag className="h-4 w-4 text-blue-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{purchases.length}</div>
-              <p className="text-xs text-gray-600 mt-1">Completed purchases</p>
-            </CardContent>
-          </Card>
+      {/* Stats Cards */}
+      <div ref={statsGridRef} className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card ref={(el: HTMLDivElement | null) => { statCardRefs.current[0] = el }} className="card-minimal transition-all duration-200 hover:shadow-elegant">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="body-md font-medium text-gray-600">Total Orders</CardTitle>
+            <div className="bg-black/10 rounded-full p-2">
+              <ShoppingBag className="h-4 w-4 text-black" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-serif font-semibold text-black">{purchases.length}</div>
+            <p className="body-xs text-gray-500 mt-1">Completed purchases</p>
+          </CardContent>
+        </Card>
 
-          <Card ref={(el: HTMLDivElement | null) => { statCardRefs.current[1] = el }} className="transition-all hover:shadow-lg">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Total Spent</CardTitle>
-              <TrendingUp className="h-4 w-4 text-green-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">₹{totalSpent.toFixed(2)}</div>
-              <p className="text-xs text-gray-600 mt-1">On sustainable items</p>
-            </CardContent>
-          </Card>
+        <Card ref={(el: HTMLDivElement | null) => { statCardRefs.current[1] = el }} className="card-minimal transition-all duration-200 hover:shadow-elegant">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="body-md font-medium text-gray-600">Total Spent</CardTitle>
+            <div className="bg-black/10 rounded-full p-2">
+              <TrendingUp className="h-4 w-4 text-black" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-serif font-semibold text-black">₹{totalSpent.toFixed(2)}</div>
+            <p className="body-xs text-gray-500 mt-1">On sustainable items</p>
+          </CardContent>
+        </Card>
 
-          <Card ref={(el: HTMLDivElement | null) => { statCardRefs.current[2] = el }} className="transition-all hover:shadow-lg">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Items Saved</CardTitle>
-              <Package className="h-4 w-4 text-purple-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{totalItems}</div>
-              <p className="text-xs text-gray-600 mt-1">From going to waste</p>
-            </CardContent>
-          </Card>
-        </div>
+        <Card ref={(el: HTMLDivElement | null) => { statCardRefs.current[2] = el }} className="card-minimal transition-all duration-200 hover:shadow-elegant">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="body-md font-medium text-gray-600">Items Saved</CardTitle>
+            <div className="bg-black/10 rounded-full p-2">
+              <Package className="h-4 w-4 text-black" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-serif font-semibold text-black">{totalItems}</div>
+            <p className="body-xs text-gray-500 mt-1">From going to waste</p>
+          </CardContent>
+        </Card>
+      </div>
 
-        {/* Purchase History */}
-        {purchases.length === 0 ? (
-          <Card ref={emptyCartRef}>
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <ShoppingBag className="h-12 w-12 text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No purchases yet</h3>
-              <p className="text-gray-600 text-center mb-6">
-                Start shopping sustainably to see your purchase history here.
-              </p>
-              <Link href="/marketplace">
-                <Button className="bg-green-600 hover:bg-green-700 transition-transform hover:scale-105">Browse Marketplace</Button>
-              </Link>
-            </CardContent>
-          </Card>
-            ) : (
-              <div ref={purchaseListRef} className="space-y-4">
-                {purchases.map((purchase, index) => (
-                  <Card 
-      key={purchase.id} 
-      ref={(el: HTMLDivElement | null) => { purchaseCardRefs.current[index] = el }}
-      className="transition-all hover:shadow-lg"
-    >
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-lg">
-              Order #{purchase.id.slice(-8).toUpperCase()}
-            </CardTitle>
-            <CardDescription className="flex items-center gap-2 mt-1">
-              <Calendar className="h-4 w-4" />
-              {purchase.createdAt.toLocaleDateString()} at{" "}
-              {purchase.createdAt.toLocaleTimeString()}
-            </CardDescription>
-          </div>
-          <div className="text-right">
-            <Badge className={getStatusColor(purchase.status)}>
-              {purchase.status.charAt(0).toUpperCase() + purchase.status.slice(1)}
-            </Badge>
-            <p className="text-lg font-bold text-green-600 mt-1">
-              ${purchase.totalAmount.toFixed(2)}
+      {/* Purchase History */}
+      {purchases.length === 0 ? (
+        <Card ref={emptyCartRef} className="card-minimal">
+          <CardContent className="flex flex-col items-center justify-center py-16">
+            <div className="bg-black/5 rounded-full w-16 h-16 flex items-center justify-center mb-6">
+              <ShoppingBag className="h-8 w-8 text-black" />
+            </div>
+            <h3 className="heading-md text-center mb-4">No purchases yet</h3>
+            <p className="body-md text-gray-600 text-center mb-8 max-w-md">
+              Start shopping sustainably to see your purchase history here.
             </p>
-          </div>
+            <Link href="/marketplace">
+              <Button className="bg-black hover:bg-gray-800 text-white shadow-subtle transition-all duration-200 hover:scale-105">Browse Marketplace</Button>
+            </Link>
+          </CardContent>
+        </Card>
+          ) : (
+            <div ref={purchaseListRef} className="space-y-6">
+              {purchases.map((purchase, index) => (
+                <Card 
+    key={purchase.id} 
+    ref={(el: HTMLDivElement | null) => { purchaseCardRefs.current[index] = el }}
+    className="card-minimal transition-all duration-200 hover:shadow-elegant"
+  >
+    <CardHeader className="pb-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <CardTitle className="font-serif text-lg font-medium">
+            Order #{purchase.id.slice(-8).toUpperCase()}
+          </CardTitle>
+          <CardDescription className="flex items-center gap-2 mt-2 body-sm text-gray-600">
+            <Calendar className="h-4 w-4" />
+            {purchase.createdAt.toLocaleDateString()} at{" "}
+            {purchase.createdAt.toLocaleTimeString()}
+          </CardDescription>
         </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          {purchase.items.map((item, index) => (
-            <div key={index}>
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Package className="h-6 w-6 text-gray-400" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-medium text-gray-900 truncate">
-                        {item.productTitle}
-                      </h4>
-                      <p className="text-sm text-gray-600">
-                        {item.productCategory}
-                      </p>
-                      <p className="text-sm text-gray-500">by {item.sellerName}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium">
-                        ₹{item.productPrice} × {item.quantity}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        ₹{(item.productPrice * item.quantity).toFixed(2)}
-                      </p>
-                    </div>
+        <div className="text-right">
+          <Badge className={`${getStatusColor(purchase.status)} font-medium`}>
+            {purchase.status.charAt(0).toUpperCase() + purchase.status.slice(1)}
+          </Badge>
+          <p className="text-lg font-serif font-semibold text-black mt-2">
+            ₹{purchase.totalAmount.toFixed(2)}
+          </p>
+        </div>
+      </div>
+    </CardHeader>
+    <CardContent>
+      <div className="space-y-4">
+        {purchase.items.map((item, index) => (
+          <div key={index}>
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Package className="h-6 w-6 text-gray-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-serif font-medium text-black truncate">
+                      {item.productTitle}
+                    </h4>
+                    <p className="body-sm text-gray-600 mt-1">
+                      {item.productCategory}
+                    </p>
+                    <p className="body-sm text-gray-500">by {item.sellerName}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-medium">
+                      ₹{item.productPrice} × {item.quantity}
+                    </p>
+                    <p className="body-sm text-gray-600">
+                      ₹{(item.productPrice * item.quantity).toFixed(2)}
+                    </p>
                   </div>
                 </div>
               </div>
-              {index < purchase.items.length - 1 && <Separator className="mt-3" />}
             </div>
+            {index < purchase.items.length - 1 && <Separator className="mt-4 bg-gray-100" />}
+          </div>
+        ))}
+      </div>
+    </CardContent>
+  </Card>
           ))}
         </div>
-      </CardContent>
-    </Card>
-            ))}
-          </div>
-        )}
-      </div>
-    </DashboardLayout>
+      )}
+    </div>
   )
 }

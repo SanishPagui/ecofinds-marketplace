@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { DashboardLayout } from "@/components/layout/DashboardLayout"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -108,21 +107,14 @@ export default function ProductDetailPage() {
           duration: getResponsiveValue(0.6, 0.4), 
           delay: getResponsiveValue(0.8, 0.4)
         })
+        
+        // Add scroll animation for description
+        createScrollAnimation(productDescriptionRef.current, 'fadeIn', {
+          duration: getResponsiveValue(0.8, 0.5),
+          start: 'top 80%',
+          end: 'bottom 20%'
+        })
       }
-      
-      // Add scroll animations for description with responsive values
-      createScrollAnimation("#product-description", {
-        opacity: 0,
-        y: getResponsiveValue(30, 20),
-      }, {
-        opacity: 1,
-        y: 0,
-        duration: getResponsiveValue(0.8, 0.5),
-        ease: "power2.out",
-        // Adjust trigger points for mobile
-        start: getResponsiveValue("top 80%", "top 90%"),
-        end: getResponsiveValue("bottom 20%", "bottom 10%")
-      })
     }
   }, [loading, product, animateElement, createScrollAnimation, isMobile, getResponsiveValue])
 
@@ -175,44 +167,43 @@ export default function ProductDetailPage() {
 
   if (loading) {
     return (
-      <DashboardLayout>
+      <div className="p-6 lg:p-8 max-w-7xl mx-auto">
         <div className="flex flex-col items-center justify-center py-16 space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-green-600"></div>
-          <div className="text-green-600 font-medium animate-pulse">Loading product details...</div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-black"></div>
+          <div className="text-gray-600 font-medium animate-pulse">Loading product details...</div>
         </div>
-      </DashboardLayout>
+      </div>
     )
   }
 
   if (!product) {
     return (
-      <DashboardLayout>
+      <div className="p-6 lg:p-8 max-w-7xl mx-auto">
         <div className="flex flex-col items-center justify-center py-16 space-y-4">
           <Package className="h-16 w-16 text-gray-400" />
-          <h2 className="text-2xl font-semibold text-gray-800">Product not found</h2>
-          <p className="text-gray-600">The product you're looking for doesn't exist or has been removed.</p>
-          <Button onClick={() => router.push("/marketplace")} className="mt-4 bg-green-600 hover:bg-green-700">
+          <h2 className="heading-lg text-center">Product not found</h2>
+          <p className="body-md text-gray-600 text-center">The product you're looking for doesn't exist or has been removed.</p>
+          <Button onClick={() => router.push("/marketplace")} className="mt-4 bg-black hover:bg-gray-800 text-white">
             Back to Marketplace
           </Button>
         </div>
-      </DashboardLayout>
+      </div>
     )
   }
 
   const isOwnProduct = user?.uid === product.sellerId
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6 p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl shadow-sm">
-        {/* Back button */}
-        <Button
-          variant="ghost"
-          onClick={() => router.back()}
-          className="flex items-center text-green-700 hover:text-green-800 hover:bg-green-100"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Marketplace
-        </Button>
+    <div className="space-y-8 p-6 lg:p-8 max-w-7xl mx-auto">
+      {/* Back button */}
+      <Button
+        variant="ghost"
+        onClick={() => router.back()}
+        className="flex items-center text-gray-700 hover:text-black hover:bg-gray-50"
+      >
+        <ArrowLeft className="mr-2 h-4 w-4" />
+        Back to Marketplace
+      </Button>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Product Image */}
@@ -279,17 +270,16 @@ export default function ProductDetailPage() {
             </Card>
 
             {/* Product Description */}
-            <Card>
+            <Card className="card-minimal">
               <CardContent className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Description</h2>
-                <div id="product-description" ref={productDescriptionRef} className="prose text-gray-700 bg-green-50 p-4 rounded-lg border border-green-100">
-                  <p>{product.description}</p>
+                <h2 className="heading-md mb-4">Description</h2>
+                <div id="product-description" ref={productDescriptionRef} className="prose text-gray-700 bg-gray-50 p-4 rounded-lg border border-gray-100">
+                  <p className="body-md">{product.description}</p>
                 </div>
               </CardContent>
             </Card>
           </div>
         </div>
-      </div>
-    </DashboardLayout>
+    </div>
   )
 }

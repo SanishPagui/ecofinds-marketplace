@@ -122,20 +122,26 @@ export async function searchProducts(searchTerm: string): Promise<Product[]> {
 }
 
 export async function getProductsByFilters(filters: {
-  category?: string
+  categories?: string[]
   minPrice?: number
   maxPrice?: number
   searchTerm?: string
+  condition?: string[]
+  rating?: number
+  availability?: string[]
+  sortBy?: string
 }): Promise<Product[]> {
-  console.log("[v1] Getting products with filters:", filters)
+  console.log("[v2] Getting products with advanced filters:", filters)
 
   let products = await getAllProducts()
-  console.log("[v1] Initial products count:", products.length)
+  console.log("[v2] Initial products count:", products.length)
 
-  // Category filter (skip "all")
-  if (filters.category && filters.category !== "all") {
-    products = products.filter(
-      (product) => product.category?.toLowerCase() === filters.category!.toLowerCase()
+  // Categories filter
+  if (filters.categories && filters.categories.length > 0) {
+    products = products.filter(product => 
+      filters.categories!.some(category => 
+        product.category?.toLowerCase() === category.toLowerCase()
+      )
     )
   }
 
@@ -160,6 +166,66 @@ export async function getProductsByFilters(filters: {
     )
   }
 
-  console.log("[v1] Filtered products count:", products.length)
+  // Condition filter (placeholder - would need condition field in Product type)
+  if (filters.condition && filters.condition.length > 0) {
+    // For now, we'll simulate this by filtering based on price ranges as a proxy for condition
+    // In a real app, you'd have a condition field in the Product type
+    products = products.filter(product => {
+      const price = Number(product.price)
+      if (filters.condition!.includes("new") && price > 1000) return true
+      if (filters.condition!.includes("excellent") && price > 500 && price <= 1000) return true
+      if (filters.condition!.includes("good") && price > 100 && price <= 500) return true
+      if (filters.condition!.includes("fair") && price <= 100) return true
+      return filters.condition!.length === 0
+    })
+  }
+
+  // Rating filter (placeholder - would need rating field in Product type)
+  if (filters.rating && filters.rating > 0) {
+    // For now, we'll simulate this by using product age as a proxy for rating
+    // In a real app, you'd have a rating field in the Product type
+    const now = new Date()
+    products = products.filter(product => {
+      const daysSinceCreated = Math.floor((now.getTime() - product.createdAt.getTime()) / (1000 * 3600 * 24))
+      const simulatedRating = Math.max(1, 5 - Math.floor(daysSinceCreated / 10))
+      return simulatedRating >= filters.rating!
+    })
+  }
+
+  // Availability filter (placeholder)
+  if (filters.availability && filters.availability.length > 0) {
+    // For now, all products are considered "available"
+    // In a real app, you'd have availability fields in the Product type
+    if (!filters.availability.includes("available")) {
+      products = []
+    }
+  }
+
+  // Sorting
+  switch (filters.sortBy) {
+    case "price-low":
+      products.sort((a, b) => Number(a.price) - Number(b.price))
+      break
+    case "price-high":
+      products.sort((a, b) => Number(b.price) - Number(a.price))
+      break
+    case "oldest":
+      products.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+      break
+    case "rating":
+      // Simulate rating sort using price as proxy
+      products.sort((a, b) => Number(b.price) - Number(a.price))
+      break
+    case "popular":
+      // Simulate popularity using creation date as proxy
+      products.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      break
+    case "newest":
+    default:
+      products.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      break
+  }
+
+  console.log("[v2] Filtered and sorted products count:", products.length)
   return products
 }

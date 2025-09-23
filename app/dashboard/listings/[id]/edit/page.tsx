@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/AuthContext"
-import { DashboardLayout } from "@/components/layout/DashboardLayout"
 import { ProductForm } from "@/components/products/ProductForm"
 import { useToast } from "@/hooks/use-toast"
 import { getProductById } from "@/lib/products"
@@ -63,11 +62,11 @@ export default function EditListingPage() {
 
   if (loading) {
     return (
-      <DashboardLayout>
+      <div className="p-6 lg:p-8">
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
         </div>
-      </DashboardLayout>
+      </div>
     )
   }
 
@@ -76,15 +75,13 @@ export default function EditListingPage() {
   }
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Edit Listing</h1>
-          <p className="text-gray-600 mt-2">Update your product listing details.</p>
-        </div>
-
-        <ProductForm product={product} mode="edit" />
+    <div className="space-y-6 p-6 lg:p-8 max-w-7xl mx-auto">
+      <div>
+        <h1 className="heading-xl text-left">Edit Listing</h1>
+        <p className="body-lg text-gray-600 mt-3">Update your product listing details.</p>
       </div>
-    </DashboardLayout>
+
+      <ProductForm product={product} mode="edit" />
+    </div>
   )
 }

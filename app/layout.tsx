@@ -6,8 +6,9 @@ import { Analytics } from "@vercel/analytics/next"
 import { AuthProvider } from "@/contexts/AuthContext"
 import { CartProvider } from "@/contexts/CartContext"
 import { AnimationProvider } from "@/contexts/AnimationContext"
-import { PageTransition } from "@/components/layout/PageTransition"
+import { PremiumNavigation } from "@/components/layout/PremiumNavigation"
 import { Toaster } from "@/components/ui/toaster"
+import { ErrorBoundary } from "@/components/ui/error-boundary"
 import { Suspense } from "react"
 import "./globals.css"
 
@@ -26,16 +27,18 @@ export default function RootLayout({
     <html lang="en">
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
         <Suspense fallback={null}>
-          <AuthProvider>
-            <CartProvider>
-              <AnimationProvider>
-                <PageTransition>
-                  {children}
-                </PageTransition>
-                <Toaster />
-              </AnimationProvider>
-            </CartProvider>
-          </AuthProvider>
+          <ErrorBoundary>
+            <AuthProvider>
+              <CartProvider>
+                <AnimationProvider>
+                  <PremiumNavigation>
+                    {children}
+                  </PremiumNavigation>
+                  <Toaster />
+                </AnimationProvider>
+              </CartProvider>
+            </AuthProvider>
+          </ErrorBoundary>
         </Suspense>
         <Analytics />
       </body>
