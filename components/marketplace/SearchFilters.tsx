@@ -321,7 +321,6 @@ export function SearchFilters({ onFiltersChange, loading, totalProducts = 0 }: S
             <CardHeader className="cursor-pointer hover:bg-gray-50 transition-colors">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <DollarSign className="h-4 w-4" />
                   Price Range
                 </CardTitle>
                 {expandedSections.price ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -484,18 +483,6 @@ export function SearchFilters({ onFiltersChange, loading, totalProducts = 0 }: S
         </Collapsible>
       </Card>
 
-      {/* Results Summary */}
-      {!loading && (
-        <Card className="bg-green-50 border-green-200">
-          <CardContent className="p-4">
-            <div className="text-center">
-              <p className="text-sm text-green-800">
-                {totalProducts === 0 ? "No products found" : `${totalProducts} product${totalProducts !== 1 ? "s" : ""} found`}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   )
 }

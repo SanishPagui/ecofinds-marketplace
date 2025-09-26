@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
+import { useSearchParams } from "next/navigation"
 import { ProductCard } from "@/components/marketplace/ProductCard"
 import { SearchFilters } from "@/components/marketplace/SearchFilters"
 import { useToast } from "@/hooks/use-toast"
@@ -15,13 +16,26 @@ export default function MarketplacePage() {
   const [loading, setLoading] = useState(true)
   const [searchLoading, setSearchLoading] = useState(false)
   const { toast } = useToast()
+  const searchParams = useSearchParams()
   const productsRef = useRef<HTMLDivElement>(null)
   const headerRef = useRef<HTMLDivElement>(null)
   const productCardsRef = useRef<(HTMLDivElement | null)[]>([])
 
   useEffect(() => {
-    loadProducts()
-  }, [])
+    // Load products with search params if present
+    const searchQuery = searchParams.get('q')
+    const category = searchParams.get('category')
+    
+    if (searchQuery || category) {
+      const initialFilters = {
+        searchTerm: searchQuery || undefined,
+        categories: category ? [category] : [],
+      }
+      loadProducts(initialFilters)
+    } else {
+      loadProducts()
+    }
+  }, [searchParams])
   
   // Get animation functions from context
   const { animateElement, createScrollAnimation, isMobile, getResponsiveValue } = useAnimation()

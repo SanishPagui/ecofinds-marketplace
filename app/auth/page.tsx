@@ -36,14 +36,14 @@ export default function AuthPage() {
     return (
       <div 
         ref={containerRef}
-        className="min-h-screen flex items-center justify-center bg-gradient-to-b from-green-50 to-white"
+        className="min-h-screen flex items-center justify-center bg-[#F8F7F4]"
       >
         <div 
           ref={loaderRef}
           className="flex flex-col items-center"
         >
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-green-600 mb-4"></div>
-          <p className="text-green-600 font-medium">Loading...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-black mb-4"></div>
+          <p className="text-black font-medium">Loading...</p>
         </div>
       </div>
     )
@@ -54,7 +54,7 @@ export default function AuthPage() {
   }
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-gradient-to-b from-green-50 to-white">
+    <div ref={containerRef} className="min-h-screen bg-[#F8F7F4]">
       <AuthForm 
         mode={mode} 
         onToggleMode={() => setMode(mode === "signin" ? "signup" : "signin")} 

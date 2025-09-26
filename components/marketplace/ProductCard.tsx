@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react"
 import { motion } from "framer-motion"
 import Image from "next/image"
 import Link from "next/link"
-import { Heart, ShoppingCart, Star, MapPin, DollarSign, Eye, Sparkles, Package } from "lucide-react"
+import { Heart, ShoppingCart, Star, MapPin, Eye, Sparkles, Package } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -229,7 +229,6 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
               {/* Price and seller info */}
               <div className="flex items-center justify-between mt-auto pt-2">
                 <div className="flex items-center gap-1">
-                  <DollarSign className="h-4 w-4 text-black" />
                   <span className="text-xl font-serif font-semibold text-black">
                     ₹{product.price}
                   </span>

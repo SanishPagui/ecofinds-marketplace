@@ -22,6 +22,7 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu"
+import { NotificationCenter } from "@/components/ui/notification-center"
 import { 
   Leaf, 
   User, 
@@ -216,24 +217,8 @@ export function PremiumNavigation({ children }: PremiumNavigationProps) {
 
             {/* Right side actions */}
             <div className="flex items-center gap-3">
-              {/* Search Button */}
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button variant="ghost" size="sm" className="hidden sm:flex rounded-full h-10 w-10 p-0 text-gray-600 hover:text-black hover:bg-gray-100">
-                  <Search className="h-4 w-4" />
-                </Button>
-              </motion.div>
-
               {/* Notifications */}
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button variant="ghost" size="sm" className="hidden sm:flex rounded-full h-10 w-10 p-0 relative text-gray-600 hover:text-black hover:bg-gray-100">
-                  <Bell className="h-4 w-4" />
-                  <motion.div
-                    className="absolute top-2 right-2 h-2 w-2 bg-black rounded-full"
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  />
-                </Button>
-              </motion.div>
+              <NotificationCenter />
 
               {/* Add Listing Button */}
               {user && (

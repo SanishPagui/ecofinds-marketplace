@@ -6,6 +6,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { AuthProvider } from "@/contexts/AuthContext"
 import { CartProvider } from "@/contexts/CartContext"
 import { AnimationProvider } from "@/contexts/AnimationContext"
+import { NotificationProvider } from "@/contexts/NotificationContext"
 import { PremiumNavigation } from "@/components/layout/PremiumNavigation"
 import { Toaster } from "@/components/ui/toaster"
 import { ErrorBoundary } from "@/components/ui/error-boundary"
@@ -30,12 +31,14 @@ export default function RootLayout({
           <ErrorBoundary>
             <AuthProvider>
               <CartProvider>
-                <AnimationProvider>
-                  <PremiumNavigation>
-                    {children}
-                  </PremiumNavigation>
-                  <Toaster />
-                </AnimationProvider>
+                <NotificationProvider>
+                  <AnimationProvider>
+                    <PremiumNavigation>
+                      {children}
+                    </PremiumNavigation>
+                    <Toaster />
+                  </AnimationProvider>
+                </NotificationProvider>
               </CartProvider>
             </AuthProvider>
           </ErrorBoundary>
